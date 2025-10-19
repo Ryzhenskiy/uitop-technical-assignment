@@ -3,6 +3,7 @@ import { ValidationPipe, Logger } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
+
 import { ExpressAdapter } from '@nestjs/platform-express';
 import express from 'express';
 
@@ -14,11 +15,11 @@ function parseOrigins(csv?: string) {
     .filter(Boolean);
 }
 
-export async function createApp(expressApp = express()) {
-  const app = await NestFactory.create(
-    AppModule,
-    new ExpressAdapter(expressApp),
-  );
+async function createNestExpressApp() {
+  const expressApp = express();
+  const adapter = new ExpressAdapter(expressApp);
+  const app = await NestFactory.create(AppModule, adapter);
+
   const cfg = app.get(ConfigService);
 
   const origins = parseOrigins(cfg.get<string>('CORS_ORIGINS'));
@@ -42,24 +43,34 @@ export async function createApp(expressApp = express()) {
     .setVersion('1.0')
     .build();
   const document = SwaggerModule.createDocument(app, docCfg);
-  SwaggerModule.setup('api', app, document);
+  // avoid clashing with Vercel’s /api folder by using /docs
+  SwaggerModule.setup('docs', app, document);
 
-  return app;
+  await app.init();
+  return { app, expressApp, cfg };
 }
 
-async function bootstrap() {
-  const app = await createApp();
-  const cfg = app.get(ConfigService);
+let cachedServer: any;
+
+export default async function handler(req: any, res: any) {
+  if (!cachedServer) {
+    const { expressApp } = await createNestExpressApp();
+    cachedServer = expressApp;
+  }
+  return cachedServer(req, res);
+}
+
+async function bootstrapLocal() {
+  const { app, cfg } = await createNestExpressApp();
   const port = Number(cfg.get('PORT') || 3000);
   await app.listen(port, '0.0.0.0');
 
   const logger = new Logger('Bootstrap');
-  logger.log(`App running on http://localhost:${port}`);
-  if (cfg.get('SWAGGER') === 'true')
-    logger.log(`Swagger: http://localhost:${port}/api`);
+  logger.log(`App on http://localhost:${port}`);
+  logger.log(`Swagger: http://localhost:${port}/docs`);
 }
 
-// Only auto-start locally
-if (process.env.VERCEL !== '1') {
-  bootstrap();
+if (process.env.VERCEL === 'false' || !process.env.VERCEL) {
+  console.log('vercel?');
+  bootstrapLocal();
 }
