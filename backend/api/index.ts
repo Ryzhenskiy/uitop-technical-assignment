@@ -13,6 +13,7 @@ export default async function handler(
   try {
     if (!cachedHandler) {
       // Import from compiled output
+      // @ts-ignore
       const mod: {
         createNestExpressApp: () => Promise<{
           // Express app is a callable handler; we cast to our Vercel-compatible type
