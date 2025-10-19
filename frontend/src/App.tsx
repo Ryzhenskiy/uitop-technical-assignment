@@ -16,7 +16,7 @@ function App() {
     isLoading: isLoadingTasks,
     error: errorTasks,
     refetch: refetchTasks,
-  } = useFetch<Task[]>('http://localhost:3000/todos', {
+  } = useFetch<Task[]>('/todos', {
     params: {
       category: selectedCategory,
     },
@@ -26,26 +26,26 @@ function App() {
     data: dataCategories,
     isLoading: isLoadingCategory,
     error: errorCategory,
-  } = useFetch<Category[]>('http://localhost:3000/categories');
+  } = useFetch<Category[]>('/categories');
 
   const {
     fetchData: addTaskToServer,
     isLoading: isPosting,
     error: createError,
   } = useFetch<Task[]>(
-    'http://localhost:3000/todos',
+    '/todos',
     { method: 'POST', headers: { 'Content-Type': 'application/json' } },
     false
   );
 
   const { fetchData: deleteTask } = useFetch<boolean>(
-    `http://localhost:3000/todos`,
+    `/todos`,
     { method: 'DELETE', headers: { 'Content-Type': 'application/json' } },
     false
   );
 
   const { fetchData: updateTask } = useFetch<Task[]>(
-    `http://localhost:3000/todos`,
+    `/todos`,
     { method: 'PATCH', headers: { 'Content-Type': 'application/json' } },
     false
   );
@@ -107,6 +107,7 @@ function App() {
     setTasks,
     handleToggle
   );
+
 
   return (
     <div className="h-full bg-[#0d1117] text-gray-100 p-6">

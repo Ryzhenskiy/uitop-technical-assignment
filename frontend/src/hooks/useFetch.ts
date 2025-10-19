@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
+import axiosInstance from '../lib/axios';
 
 interface UseFetchOptions<T = any> extends AxiosRequestConfig {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
@@ -56,7 +57,7 @@ function useFetch<T = any>(
       setError(null);
 
       try {
-        const response: AxiosResponse<T> = await axios({
+        const response: AxiosResponse<T> = await axiosInstance({
           url: overrideConfig?.param ? `${url}/${overrideConfig.param}` : url,
           method,
           headers,
