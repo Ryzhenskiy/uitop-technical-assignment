@@ -15,7 +15,7 @@ function parseOrigins(csv?: string) {
     .filter(Boolean);
 }
 
-async function createNestExpressApp() {
+export async function createNestExpressApp() {
   const expressApp = express();
   const adapter = new ExpressAdapter(expressApp);
   const app = await NestFactory.create(AppModule, adapter);
@@ -48,16 +48,6 @@ async function createNestExpressApp() {
 
   await app.init();
   return { app, expressApp, cfg };
-}
-
-let cachedServer: any;
-
-export default async function handler(req: any, res: any) {
-  if (!cachedServer) {
-    const { expressApp } = await createNestExpressApp();
-    cachedServer = expressApp;
-  }
-  return cachedServer(req, res);
 }
 
 async function bootstrapLocal() {
