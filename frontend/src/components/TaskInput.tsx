@@ -1,10 +1,14 @@
 import { Plus } from 'lucide-react';
 import type { Category } from '../types';
 import { useForm, Controller } from 'react-hook-form';
+import { toast } from 'sonner';
+import { Spinner } from './ui/spinner';
 
 interface TaskInputProps {
   categories: Category[];
   onAdd: (task: { title: string; categoryId: number }) => void;
+  isLoading: boolean;
+  error: Error | null;
 }
 
 interface FormValues {
@@ -12,7 +16,12 @@ interface FormValues {
   categoryId: number;
 }
 
-export default function TaskInput({ categories, onAdd }: TaskInputProps) {
+export default function TaskInput({
+  categories,
+  onAdd,
+  isLoading,
+  error,
+}: TaskInputProps) {
   const { register, handleSubmit, control, reset } = useForm<FormValues>({
     defaultValues: {
       title: '',
@@ -22,6 +31,7 @@ export default function TaskInput({ categories, onAdd }: TaskInputProps) {
 
   const onSubmit = (data: FormValues) => {
     if (!data.title.trim()) return;
+    if (error) [toast.error('Error creating task. Please try again.')];
     onAdd({ title: data.title, categoryId: data.categoryId });
     reset();
   };
@@ -59,7 +69,7 @@ export default function TaskInput({ categories, onAdd }: TaskInputProps) {
         type="submit"
         className="flex items-center gap-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-xl text-white text-sm"
       >
-        <Plus size={24} />
+        {isLoading ? <Spinner /> : <Plus size={24} />}
       </button>
     </form>
   );

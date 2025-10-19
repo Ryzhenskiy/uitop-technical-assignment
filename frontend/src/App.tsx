@@ -5,6 +5,7 @@ import { TaskList, TaskFilter, TaskInput } from './components';
 import { useFetch, useUndoableDelete } from './hooks';
 import type { Category, Task } from './types';
 import './App.css';
+import { Spinner } from './components/ui/spinner';
 
 function App() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -12,8 +13,8 @@ function App() {
 
   const {
     data,
-    isLoading,
-    error,
+    isLoading: isLoadingTasks,
+    error: errorTasks,
     refetch: refetchTasks,
   } = useFetch<Task[]>('http://localhost:3000/todos', {
     params: {
@@ -106,7 +107,6 @@ function App() {
     setTasks,
     handleToggle
   );
-  console.log(tasks, 'tasks');
 
   return (
     <div className="h-full bg-[#0d1117] text-gray-100 p-6">
@@ -116,20 +116,29 @@ function App() {
           onChangeFilter={(category) => setSelectedCategory(category)}
         />
       ) : (
-        <></>
+        <Spinner />
       )}
       <div className="w-full mx-auto">
         {!isLoadingCategory && !errorCategory && dataCategories ? (
-          <TaskInput categories={dataCategories} onAdd={handleAdd} />
+          <TaskInput
+            categories={dataCategories}
+            onAdd={handleAdd}
+            isLoading={isPosting}
+            error={createError}
+          />
         ) : (
-          <></>
+          <Spinner />
         )}
 
-        <TaskList
-          tasks={tasks}
-          onToggle={(id) => handleToggleItemUndo(id, false)}
-          onDelete={(id) => deleteItem(id)}
-        />
+        {!isLoadingTasks && !errorTasks && tasks ? (
+          <TaskList
+            tasks={tasks}
+            onToggle={(id) => handleToggleItemUndo(id, false)}
+            onDelete={(id) => deleteItem(id)}
+          />
+        ) : (
+          <Spinner />
+        )}
       </div>
       <Toaster />
     </div>
