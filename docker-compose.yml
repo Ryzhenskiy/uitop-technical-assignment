@@ -1,33 +1,27 @@
-version: '3.9'
-
 services:
   backend:
     build:
       context: ./backend
+      dockerfile: Dockerfile.dev
     ports:
       - '3000:3000'
     environment:
       NODE_ENV: development
     volumes:
-      # Mount source code for live reload, but don't overwrite node_modules
       - ./backend:/usr/src/app
       - /usr/src/app/node_modules
     command: npm run start:dev
-    # Wait for DB container if you add one later (optional)
-    # depends_on:
-    #   - db
 
   frontend:
     build:
       context: ./frontend
+      dockerfile: Dockerfile.dev
     ports:
       - '5173:5173'
     environment:
       NODE_ENV: development
     volumes:
-      # Mount source for hot reload
       - ./frontend:/usr/src/app
-      # Prevent host node_modules from overwriting container's
       - /usr/src/app/node_modules
     command: npm run dev
 
