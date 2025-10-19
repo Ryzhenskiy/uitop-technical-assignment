@@ -22,8 +22,7 @@ RUN npm rebuild better-sqlite3
 
 # for seed man
 RUN npm run seed
-RUN npm run build
 # Expose NestJS dev port
 EXPOSE 3000
 # Run NestJS in development mode (watch mode)
-CMD ["npm", "run", "start:prod"]
+CMD ["npm", "run", "start:dev"]

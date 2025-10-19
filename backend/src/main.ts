@@ -1,15 +1,28 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
-import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { AppModule } from './app.module';
+import { ConfigService } from '@nestjs/config';
+
+function parseOrigins(csv?: string) {
+  if (!csv) return [];
+  return csv
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const cfg = app.get(ConfigService);
+
+  const origins = parseOrigins(cfg.get<string>('CORS_ORIGINS'));
   app.enableCors({
-    origin: 'http://localhost:5173',
+    origin: origins.length ? origins : true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -17,19 +30,21 @@ async function bootstrap() {
       transform: true,
     }),
   );
-  const config = new DocumentBuilder()
+
+  const docCfg = new DocumentBuilder()
     .setTitle('My Category-Todos API')
-    .setDescription('API documentation for my NestJS app')
+    .setDescription('API documentation')
     .setVersion('1.0')
     .build();
-  const document = SwaggerModule.createDocument(app, config);
+  const document = SwaggerModule.createDocument(app, docCfg);
   SwaggerModule.setup('api', app, document);
 
-  const port = process.env.PORT ?? 3000;
-  await app.listen(port);
+  const port = Number(cfg.get('PORT') || 3000);
+  await app.listen(port, '0.0.0.0');
 
   const logger = new Logger('Bootstrap');
-  logger.log(`Application is running on: http://localhost:${port}`);
-  logger.log(`Swagger docs available at: http://localhost:${port}/api`);
+  logger.log(`App on http://localhost:${port}`);
+  if (cfg.get('SWAGGER') === 'true')
+    logger.log(`Swagger: http://localhost:${port}/api`);
 }
 bootstrap();
