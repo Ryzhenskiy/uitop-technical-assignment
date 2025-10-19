@@ -36,7 +36,7 @@ The application aims to showcase clean architecture, modular design, and a full 
 
 ## API Documentation  
 
-The backend API is available at:  http://localhost:3000
+The backend API is available at:  http://localhost:3000/api
 
 ## Environment Variables
 
